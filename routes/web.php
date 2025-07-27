@@ -1,14 +1,23 @@
 <?php
 
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GroupController as GroupController;
-use App\Http\Controllers\StudentController as StudentController;
+use PHPUnit\TextUI\Configuration\GroupCollection;
 
 Route::get('/', function () {
-    return redirect("groups");
+    return view('welcome');
 });
 
-Route::resource('/groups', GroupController::class)
-    ->except("edit", "update", "destroy");
-Route::resource('/groups.students', StudentController::class)
-    ->except("edit", "update", "destroy");
+Route::resource('groups', GroupController::class);
+Route::resource('students', StudentController::class);
+
+// Для отображения формы создания студента внутри группы
+Route::get('groups/{group}/students/create', [StudentController::class, 'create'])->name('students.create');
+
+// Для сохранения нового студента
+Route::post('groups/{group}/students', [StudentController::class, 'store'])->name('students.store');
+
+// Для просмотра студента
+Route::get('students/{student}', [StudentController::class, 'show'])->name('students.show');
+

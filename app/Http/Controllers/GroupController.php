@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
 use Illuminate\Http\Request;
+use App\Models\Student;
+use App\Models\Group;
 
 class GroupController extends Controller
 {
@@ -12,7 +13,8 @@ class GroupController extends Controller
      */
     public function index()
     {
-        return view("groups.index", ["groups" => Group::all()]);
+        $groups = Group::all();
+        return view('groups.index', compact('groups'));
     }
 
     /**
@@ -20,7 +22,7 @@ class GroupController extends Controller
      */
     public function create()
     {
-        return view("groups.create", ["group" => new Group()]);
+        return view('groups.create');
     }
 
     /**
@@ -28,11 +30,17 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        $group = new Group();
-        $group->title = $request->input('title');
-        $group->start_from = $request->input('start_from');
-        $group->save();
-        return redirect("groups");
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+        ]);
+
+        Group::create([
+            'title' => $validated['title'],
+            'start_from' => now()->toDateString(),
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('groups.index');
     }
 
     /**
@@ -40,13 +48,14 @@ class GroupController extends Controller
      */
     public function show(Group $group)
     {
-        return view('students.index', ['group' => $group, 'students' => $group->students()->get()]);
+        $students = $group->students;
+        return view('groups.show', compact('group', 'students'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Group $group)
+    public function edit(string $id)
     {
         //
     }
@@ -54,7 +63,7 @@ class GroupController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Group $group)
+    public function update(Request $request, string $id)
     {
         //
     }
@@ -62,7 +71,7 @@ class GroupController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Group $group)
+    public function destroy(string $id)
     {
         //
     }

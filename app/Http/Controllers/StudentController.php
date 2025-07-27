@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
-use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Models\Student;
+use App\Models\Group;
 
 class StudentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Group $group)
+    public function index()
     {
-        return view('students.index', ['group' => $group, 'students' => $group->students()->get()]);
+        //
     }
 
     /**
@@ -21,29 +21,35 @@ class StudentController extends Controller
      */
     public function create(Group $group)
     {
-        return view("students.create", ['group' => $group, "student" => new Student()]);
+        return view('students.create', compact('group'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Group $group, Request $request)
+    public function store(Request $request, Group $group)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'surname' => 'required|string|max:255',
+        ]);
+        // $student = new Student($request->all());
         $student = new Student();
-        $student->name = $request->input('name');
-        $student->surname = $request->input('surname');
+        $student->name = $request->name;
+        $student->surname = $request->surname;
         $student->group_id = $group->id;
         $student->save();
-        return redirect("/groups/$group->id/students");
+        // return redirect()->route('groups.show', $group);
+        return redirect()->route('students.show', $student);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Student $student)
     {
-        $student = Student::with('group')->findOrFail($id);
-        return view('students.card', ['student' => $student, "group" => $student->group]);
+        $group = $student->group;
+        return view('students.show', compact('student', 'group'));
     }
 
     /**
